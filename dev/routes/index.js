@@ -6,6 +6,6 @@ const baseApiUrl = process.env.BASE_API_URL || '/'
 const routePrefix = baseApiUrl === '/' ? '' : baseApiUrl
 
 router.use(`${routePrefix}/info`, info)
-router.use(`${routePrefix}/routePrefix`, user)
+router.use(`${routePrefix}/user`, user)
 
 module.exports = router

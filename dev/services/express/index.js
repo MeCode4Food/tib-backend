@@ -21,7 +21,7 @@ module.exports = (routes) => {
     limit: config.bodyLimit
   }))
 
-  app.use(helmet)
+  app.use(helmet())
 
   app.all('*', function (req, res, next) {
     next()
