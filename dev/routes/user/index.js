@@ -14,4 +14,9 @@ router.get('/search', async (req, res) => {
 
   respond.success(res, results)
 })
+
+router.put('/update', async (req, res) => {
+  
+})
+
 module.exports = router
