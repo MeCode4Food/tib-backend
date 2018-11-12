@@ -8,10 +8,10 @@ exports.NotFoundError = class NotFoundError extends Error {
 }
 
 // ------- AccessTokenError Error class -------
-exports.EmptyPostgresResultsetError = class EmptyPostgresResultsetError extends Error {
+exports.EmptyMySQLResultsetError = class EmptyMySQLResultsetError extends Error {
   constructor (message) {
     super()
     this.name = this.constructor.name
-    this.message = 'Postgres resultset is empty.'
+    this.message = 'MySQL resultset is empty.'
   }
 }

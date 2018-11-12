@@ -1,22 +1,8 @@
 const router = require('express').Router()
-const knex = require('../../services/knex')
-const respond = require(`${global.SERVER_ROOT}/services/response`)
+const controller = require('./controller')
 
-router.get('/search', async (req, res) => {
-  let searchQuery = req.query.query
+router.get('/search', controller.getCardByName)
 
-  let query = knex
-    .select()
-    .from('users')
-    .where(`name`, `like`, `%${searchQuery}%`)
-
-  let results = await query
-
-  respond.success(res, results)
-})
-
-router.put('/update', async (req, res) => {
-  
-})
+router.put('/update', controller.updateCardDBUsingJSONFile)
 
 module.exports = router
