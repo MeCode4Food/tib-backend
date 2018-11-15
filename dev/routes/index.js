@@ -1,6 +1,7 @@
 const router = require('express').Router()
 const user = require('./user')
 const info = require('./info')
+const card = require('./card')
 const debug = require('./debug')
 const updateDb = require('./update_db')
 
@@ -9,6 +10,7 @@ const routePrefix = baseApiUrl === '/' ? '' : baseApiUrl
 
 router.use(`${routePrefix}/info`, info)
 router.use(`${routePrefix}/user`, user)
+router.use(`${routePrefix}/card`, card)
 router.use(`${routePrefix}/debug`, debug)
 router.use(`${routePrefix}/update_db`, updateDb)
 
