@@ -1,4 +1,5 @@
 const axios = require('axios')
+const SIGNALE = require('signale')
 
 module.exports = (url) => {
   return new Promise(async (resolve, reject) => {
@@ -8,7 +9,7 @@ module.exports = (url) => {
           resolve(response.data.card_set.card_list)
         })
     } catch (error) {
-      reject(error)
+      SIGNALE.error(error)
     }
   })
 }

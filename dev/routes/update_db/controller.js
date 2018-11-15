@@ -1,5 +1,6 @@
 // const knex = require('../../services/knex')
 const respond = require(`${global.SERVER_ROOT}/services/response`)
+const SIGNALE = require('signale')
 const validate = require('./helpers/validate')
 const getCardSetUrl = require('./helpers/get_cardset_url')
 const getCardSetFromUrl = require('./helpers/get_cardset_from_url')
@@ -15,9 +16,12 @@ exports.retrieveCardSetAndUpdateDB = async (req, res) => {
 
     // get url, call url, get json
     const url = await getCardSetUrl(setNum)
+    SIGNALE.success('Retrieved card set url from official API')
     const cardSet = await getCardSetFromUrl(url)
-    await updateCardDB(cardSet)
-    res.status(200).json({ status: cardSet })
+    SIGNALE.success('Retrieved card set from official API url')
+    let result = await updateCardDB(cardSet)
+
+    if (result) res.status(200).json({ status: 'OK' })
   } catch (error) {
     respond.failure(res, error)
   }

@@ -10,15 +10,16 @@ module.exports = async () => {
       table.string('card_name').notNullable()
       table.string('card_type').notNullable()
       table.string('card_text')
-      table.string('card_image').notNullable()
+      table.string('card_image')
       table.string('colour').notNullable()
       table.string('rarity')
 
       // card relations
       table.integer('signature_id')
-      table.integer('signature_of_id')
+      table.integer('parent_id')
       table.integer('passive_id')
       table.integer('active_id')
+      table.integer('reference_id')
 
       // card stats
       table.integer('attack')

@@ -1,4 +1,5 @@
 const axios = require('axios')
+const SIGNALE = require('signale')
 const { VALVE_CARDSET_API_URL } = process.env
 
 module.exports = (setNum) => {
@@ -11,7 +12,7 @@ module.exports = (setNum) => {
           resolve(url)
         })
     } catch (error) {
-      reject(error)
+      SIGNALE.error(error)
     }
   })
 }
