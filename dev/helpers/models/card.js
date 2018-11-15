@@ -6,8 +6,8 @@ class Card {
     this.card_id = object.card_id
     this.card_name = object.card_name.english
     this.card_type = object.card_type
-    this.card_text = object.card_text.english
-    this.card_image = object.large_image.default
+    this.card_text = object.card_text.english ? object.card_text.english : null
+    this.card_image = object.large_image.default ? object.large_image.default : null
 
     // assign colour based on is_X field
     if (object.is_blue === true) {
@@ -22,7 +22,7 @@ class Card {
       this.colour = 'none'
     }
 
-    this.rarity = object.rarity
+    this.rarity = object.rarity ? object.rarity : null
 
     // card relations
     this.signature_id = null
@@ -31,32 +31,31 @@ class Card {
     this.active_id = null
     this.reference_id = null
 
-    if (object.card_type === 'Hero') {
-      for (var ref in object.references) {
-        switch (ref.ref_type) {
-          case 'includes':
-            this.signature = ref.card_id
-            break
-          case 'passive_ability':
-            this.passive_id = ref.card_id
-            break
-          case 'active_ability':
-            this.active_id = ref.card_id
-            break
-          default:
-            break
-        }
+    object.references.forEach(function (ref) {
+      switch (ref.ref_type) {
+        case 'includes':
+          this.signature_id = ref.card_id
+          break
+        case 'passive_ability':
+          this.passive_id = ref.card_id
+          break
+        case 'active_ability':
+          this.active_id = ref.card_id
+          break
+        case 'references':
+          this.reference_id = ref.card_id
+          break
+        default:
+          break
       }
-    } else if (object.references[0].ref_type === 'references') {
-      this.reference_id = object.references[0].card_id
-    }
+    }.bind(this))
 
     // card stats
-    this.attack = object.attack
-    this.armour = object.armour
-    this.hit_points = object.hit_points
-    this.mana_cost = object.mana_cost
-    this.gold_cost = object.gold_cost
+    this.attack = object.attack ? object.attack : null
+    this.armour = object.armour ? object.armour : null
+    this.hit_points = object.hit_points ? object.hit_points : null
+    this.mana_cost = object.mana_cost ? object.mana_cost : null
+    this.gold_cost = object.gold_cost ? object.gold_cost : null
   }
 }
 
