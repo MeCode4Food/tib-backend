@@ -14,6 +14,6 @@ module.exports.getCardFromQuery = async (req, res) => {
     let result = await searchForCard(query)
     respond.success(res, result)
   } catch (error) {
-    respond.failure(error)
+    respond.failure(res, error)
   }
 }

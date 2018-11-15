@@ -5,7 +5,7 @@ module.exports.searchForCard = async (query) => {
   try {
     let searchForCardQuery = knex.select()
       .from('cards')
-      .where('card_name', 'like', query)
+      .where('card_name', 'like', `%${query}%`)
       .limit(1)
 
     console.log('query\n', searchForCardQuery.toString())
@@ -17,3 +17,5 @@ module.exports.searchForCard = async (query) => {
     SIGNALE.error(error)
   }
 }
+
+// TODO custom search keywords such as  bb = bristleback, blink = blink dagger
