@@ -10,7 +10,7 @@ module.exports.searchForCard = async (query) => {
 
     let result = (await searchForCardQuery)[0]
 
-    if (result.signature_id) {
+    if (result && result.signature_id) {
       let searchForSignatureCard = knex.select()
         .from('cards')
         .where({
@@ -22,7 +22,7 @@ module.exports.searchForCard = async (query) => {
       result.signature_text = signatureCard.card_text
     }
 
-    if (result.passive_id) {
+    if (result && result.passive_id) {
       let searchForPassiveCard = knex.select()
         .from('cards')
         .where({
@@ -34,7 +34,7 @@ module.exports.searchForCard = async (query) => {
       result.passive_text = passiveCard.card_text
     }
 
-    if (result.parent_id) {
+    if (result && result.parent_id) {
       let searchForParentCard = knex.select()
         .from('cards')
         .where({
