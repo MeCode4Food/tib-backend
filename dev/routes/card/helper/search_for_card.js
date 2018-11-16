@@ -8,10 +8,7 @@ module.exports.searchForCard = async (query) => {
       .where('card_name', 'like', `%${query}%`)
       .limit(1)
 
-    console.log('query\n', searchForCardQuery.toString())
-
     let result = (await searchForCardQuery)[0]
-    console.log('result\n', result)
 
     if (result.signature_id) {
       let searchForSignatureCard = knex.select()

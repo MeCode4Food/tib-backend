@@ -18,8 +18,8 @@ exports.retrieveCardSetAndUpdateDB = async (req, res) => {
     const url = await getCardSetUrl(setNum)
     SIGNALE.success('Retrieved card set url from official API')
     const cardSet = await getCardSetFromUrl(url)
-    SIGNALE.success('Retrieved card set from official API url')
-    let result = await updateCardDB(cardSet)
+    SIGNALE.success(`Retrieved card set of id '${cardSet.set_info.set_id}' from official API url`)
+    let result = await updateCardDB(cardSet.card_list)
 
     if (result) res.status(200).json({ status: 'OK' })
   } catch (error) {

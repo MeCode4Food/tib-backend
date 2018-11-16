@@ -117,12 +117,12 @@ module.exports = (cardSet) => {
           'card_id': childId
         })
 
-        console.log(updateChildCardParentQuery.toString())
+        SIGNALE.info(`Updating parent id ${chalk.cyan(childMap[childId])} for child id ${chalk.cyan(childId)}`)
         await updateChildCardParentQuery
         cardCount++
       }
       SIGNALE.success(`Resolved ${chalk.cyan(cardCount)} card dependencies in DB`)
-      return true
+      resolve(true)
     } catch (error) {
       SIGNALE.error(error)
     }

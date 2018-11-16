@@ -1,3 +1,5 @@
+const { replaceHTMLwithMD } = require('./helper/card_text')
+
 class Card {
   constructor (object) {
     // id and date is optional for the constructor.
@@ -6,7 +8,7 @@ class Card {
     this.card_id = object.card_id
     this.card_name = object.card_name.english
     this.card_type = object.card_type
-    this.card_text = object.card_text.english ? object.card_text.english : null
+    this.card_text = object.card_text.english ? replaceHTMLwithMD(object.card_text.english) : null
     this.card_image = object.large_image.default ? object.large_image.default : null
 
     // assign colour based on is_X field
@@ -52,7 +54,7 @@ class Card {
 
     // card stats
     this.attack = object.attack ? object.attack : null
-    this.armour = object.armour ? object.armour : null
+    this.armour = object.armor ? object.armor : null
     this.hit_points = object.hit_points ? object.hit_points : null
     this.mana_cost = object.mana_cost ? object.mana_cost : null
     this.gold_cost = object.gold_cost ? object.gold_cost : null

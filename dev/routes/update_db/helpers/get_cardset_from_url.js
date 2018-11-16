@@ -6,7 +6,7 @@ module.exports = (url) => {
     try {
       axios.get(url)
         .then((response) => {
-          resolve(response.data.card_set.card_list)
+          resolve(response.data.card_set)
         })
     } catch (error) {
       SIGNALE.error(error)
