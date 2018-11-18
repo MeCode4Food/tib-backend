@@ -9,7 +9,7 @@ This consists of:
 1. Run the following:
    ```
    > npm install
-   > npm start
+   > npm run start
    ```
 
     and you're good!
