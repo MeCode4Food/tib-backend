@@ -7,6 +7,9 @@ module.exports.searchForCard = async (query) => {
     let searchForCardQuery = knex.select()
       .from('cards')
       .where('card_name', 'like', `%${query}%`)
+      .whereNot({ 'card_type': 'Passive Ability' })
+      .whereNot({ 'card_type': 'Pathing' })
+      .whereNot({ 'card_type': 'Stronghold' })
       .limit(1)
 
     // execute query
