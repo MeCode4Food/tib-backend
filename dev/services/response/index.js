@@ -7,7 +7,7 @@ exports.success = (res, data) => {
 exports.failure = (res, error) => {
   SIGNALE.error(error)
   if (error.name === 'NotFoundError') return sendResponse(res, 404, 'NOT_FOUND', error.message)
-  if (error.name === 'EmptyPostgresResultsetError') return sendResponse(res, 1003, 'POSTGRES_EMPTY_CONTENT', error.message)
+  if (error.name === 'EmptyMySQLResultsetError') return sendResponse(res, 1003, 'MYSQL_EMPTY_CONTENT', error.message)
   return sendResponse(res, 500, 'INTERNAL_SERVER_ERROR', error.message) // Last kind of error to be caught will be this, which is why its at the end.
 }
 
