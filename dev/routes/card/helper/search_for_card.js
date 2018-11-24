@@ -1,5 +1,5 @@
 const knex = require(`${global.SERVER_ROOT}/services/knex`)
-const { EmptyMySQLResultsetError } = require(`${global.SERVER_ROOT}/services/response/error`)
+// const { EmptyMySQLResultsetError } = require(`${global.SERVER_ROOT}/services/response/error`)
 const SIGNALE = require('signale')
 
 module.exports.searchForCard = async (query) => {
@@ -19,9 +19,8 @@ module.exports.searchForCard = async (query) => {
       // append card dependencies
       result = await appendCardDependencies(result)
     } else {
-      throw new EmptyMySQLResultsetError()
+      result = {}
     }
-
     return result
   } catch (error) {
     SIGNALE.error(error)
