@@ -14,13 +14,21 @@ module.exports.searchForCard = async (query) => {
 
     // execute query
     let result = (await searchForCardQuery)[0]
+    let tries = 5
 
-    if (result) {
-      // append card dependencies
-      result = await appendCardDependencies(result)
-    } else {
+    while (!result && tries) {
+      // do over once again if there is no result
+      result = (await searchForCardQuery)[0]
+      tries--
+    }
+
+    if (tries === 0) {
       throw new EmptyMySQLResultsetError()
     }
+
+    // append card dependencies
+    result = await appendCardDependencies(result)
+
     return result
   } catch (error) {
     throw error
