@@ -4,7 +4,7 @@ let deckByteArray = []
 
 deckCode = deckCode.replace('-', '/').replace('_', '=').slice(3)
 
-buffer.from(deckCode, 'base64').map((e) => deckByteArray.push(e))
+Buffer.from(deckCode, 'base64').map((e) => deckByteArray.push(e))
 
 let version = deckByteArray[0] >> 4
 
@@ -19,7 +19,11 @@ let calcCheckSum = (deckByteArray.reduce((a, c) => a + c) - deckByteArray[0] - d
 
 console.log('calCheckSum', calcCheckSum)
 
-console.log('deck output', ParseDeckInternal(deckCode, deckByteArray))
+deckByteArray.forEach(function (e) {
+  
+})
+
+// console.log('deck output', ParseDeckInternal(deckCode, deckByteArray))
 
 // reads out a var-int encoded block of bits, returns true if another chunk should follow
 function ReadBitsChunk (chunk, NumBits, currShift, OutBits) {
