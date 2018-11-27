@@ -10,6 +10,7 @@ module.exports.searchForCard = async (query) => {
       .whereNot({ 'card_type': 'Passive Ability' })
       .whereNot({ 'card_type': 'Pathing' })
       .whereNot({ 'card_type': 'Stronghold' })
+      .orderByRaw('LENGTH(card_name) asc')
       .limit(1)
 
     // execute query
@@ -31,6 +32,7 @@ module.exports.searchForCard = async (query) => {
 
     return result
   } catch (error) {
+    console.log(error)
     throw error
   }
 }
