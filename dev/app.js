@@ -16,7 +16,7 @@ setupDB()
 // API Routing Configurations
 const api = getWebAppAPI() // get express.Router()
 
-// load in api routes into the custom made express service
+// Load express middleware into app and create server
 const app = express(api)
 const server = http.createServer(app)
 

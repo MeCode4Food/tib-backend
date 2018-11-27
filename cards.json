@@ -7,7 +7,9 @@
 			"rarity":"string",
 			"colour":"string",
 			"attack":"number",
-			"hit_points":"number"
+			"armor": "number",
+			"hit_points":"number",
+			"signature_card": "number"
 		}
 	},
 	{

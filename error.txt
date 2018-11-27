@@ -1,0 +1,7 @@
+{
+    "status": {
+        "code": 500,
+        "description": "INTERNAL_SERVER_ERROR"
+    },
+    "data": "select * from `cards` where `card_name` like '%duel%' and not `card_type` = 'Passive Ability' and not `card_type` = 'Pathing' and not `card_type` = 'Stronghold' limit 1 - read ECONNRESET"
+}
