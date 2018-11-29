@@ -10,15 +10,15 @@ module.exports.getWebAppAPI = () => {
 }
 
 module.exports.setupTimedScripts = async () => {
-  const interval = 1000 // 1000 * 60 * 60 * 7 // 7 hours interval
+  const interval = 1000 * 60 * 60 // hours interval
 
-  setTimeout(async () => {
+  setInterval(async () => {
     try {
       await pingDB()
     } catch (error) {
       console.log('Timed Script error', error)
     } finally {
-      console.log('DB Pinged')
+      // console.log('DB Pinged')
     }
   }, interval)
 }
