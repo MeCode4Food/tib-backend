@@ -3,7 +3,7 @@ const http = require('http')
 const SIGNALE = require('signale')
 const chalk = require('chalk')
 
-const { setupDB, getWebAppAPI } = require('./helpers/startup')
+const { setupDB, getWebAppAPI, setupTimedScripts } = require('./helpers/startup')
 
 const os = require('os')
 const port = process.env.EXPRESS_PORT
@@ -12,6 +12,9 @@ const env = process.env.NODE_ENV
 
 // DB Configurations
 setupDB()
+
+// Set up timed scripts
+setupTimedScripts()
 
 // API Routing Configurations
 const api = getWebAppAPI() // get express.Router()
