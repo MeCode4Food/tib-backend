@@ -3,28 +3,36 @@ const { EmptyMySQLResultsetError } = require(`${global.SERVER_ROOT}/services/res
 // const SIGNALE = require('signale')
 
 module.exports.searchForCard = async (query) => {
-  try {
-    let searchForCardQuery = knex.select()
-      .from('cards')
-      .where('card_name', 'like', `%${query}%`)
-      .whereNot({ 'card_type': 'Passive Ability' })
-      .whereNot({ 'card_type': 'Pathing' })
-      .whereNot({ 'card_type': 'Stronghold' })
-      .limit(1)
+  let tries = 5
+  let searchForCardQuery = knex.select('*', knex.raw(`(CASE WHEN card_type <> 'Ability' THEN 1 ELSE 0 END) as isNotAbility`))
+    .from('cards')
+    .where('card_name', 'LIKE', `%${query}%`)
+    .whereNot({ 'card_type': 'Passive Ability' })
+    .whereNot({ 'card_type': 'Pathing' })
+    .whereNot({ 'card_type': 'Stronghold' })
+    .orderByRaw('LENGTH(card_name) ASC, isNotAbility DESC')
+    .limit(1)
 
-    // execute query
-    let result = (await searchForCardQuery)[0]
+  // execute query
+  let result = (await searchForCardQuery)[0]
 
-    if (result) {
-      // append card dependencies
-      result = await appendCardDependencies(result)
-    } else {
-      throw new EmptyMySQLResultsetError()
+  // do over once again if there is no result or tries is 0
+  while (!result && tries) {
+    try {
+      result = (await searchForCardQuery)[0]
+    } catch (error) {
+      if (!tries && !error.message.endsWith('ECONNRESET')) throw error
+    } finally {
+      tries--
     }
-    return result
-  } catch (error) {
-    throw error
   }
+
+  if (tries === 0) throw new EmptyMySQLResultsetError()
+
+  // append card dependencies
+  result = await appendCardDependencies(result)
+
+  return result
 }
 
 let appendCardDependencies = async function (result) {
