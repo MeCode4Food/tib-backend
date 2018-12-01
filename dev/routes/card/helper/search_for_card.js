@@ -4,13 +4,13 @@ const { EmptyMySQLResultsetError } = require(`${global.SERVER_ROOT}/services/res
 
 module.exports.searchForCard = async (query) => {
   let tries = 5
-  let searchForCardQuery = knex.select()
+  let searchForCardQuery = knex.select('*', knex.raw(`(CASE WHEN card_type <> 'Ability' THEN 1 ELSE 0 END) as isNotAbility`))
     .from('cards')
-    .where('card_name', 'like', `%${query}%`)
+    .where('card_name', 'LIKE', `%${query}%`)
     .whereNot({ 'card_type': 'Passive Ability' })
     .whereNot({ 'card_type': 'Pathing' })
     .whereNot({ 'card_type': 'Stronghold' })
-    .orderByRaw('LENGTH(card_name) asc')
+    .orderByRaw('LENGTH(card_name) ASC, isNotAbility DESC')
     .limit(1)
 
   // execute query
