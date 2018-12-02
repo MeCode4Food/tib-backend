@@ -44,6 +44,8 @@ module.exports = async (deckCode) => {
     return stack
   })
 
+  deckObjectRaw.heroes = _.sortBy(deckObjectRaw.heroes, (hero) => { return hero.turn })
+
   // do the same for cards
   deckObjectRaw.cards = _.map(deckObjectRaw.cards, (stack) => {
     const id = stack.id
