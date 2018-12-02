@@ -33,40 +33,43 @@ module.exports = async (deckCode) => {
     resultsMap[card.card_id] = card
   })
 
-  // loop through each object in heroes. append card info to the stack
-  _.forEach(deckObjectRaw.heroes, (stack) => {
-    stack.card_id = stack.id
-    delete stack.id
+  // loop through each object in heroes. alter the stack and remap it to the source
+  deckObjectRaw.heroes = _.map(deckObjectRaw.heroes, (stack) => {
+    const id = stack.id
+    const turn = stack.turn
 
-    stack.name = resultsMap[stack.card_id].card_name
-    stack.colour = resultsMap[stack.card_id].colour
+    stack = resultsMap[id]
+    stack.turn = turn
+
+    return stack
   })
 
   // do the same for cards
-  _.forEach(deckObjectRaw.cards, (stack) => {
-    stack.card_id = stack.id
-    delete stack.id
+  deckObjectRaw.cards = _.map(deckObjectRaw.cards, (stack) => {
+    const id = stack.id
+    const count = stack.count
 
-    if (resultsMap[stack.card_id].card_type === 'Item') {
+    if (resultsMap[id].card_type === 'Item') {
       // create item section if it does not exist
       if (!deckObjectRaw.items) deckObjectRaw.items = []
 
       // push item into item array in new item section
-      deckObjectRaw.items.push({
-        card_id: stack.card_id,
-        card_name: resultsMap[stack.card_id].card_name,
-        count: stack.count
-      })
+      resultsMap[id].count = count
+      deckObjectRaw.items.push(resultsMap[id])
 
-      idToDelete.push(stack.card_id)
+      idToDelete.push(id)
+      return stack
     } else {
-      stack.name = resultsMap[stack.card_id].card_name
+      resultsMap[id].count = count
+      stack = resultsMap[id]
+
+      return stack
     }
   })
 
   // remove the stack from cards that has the card_id in items
   _.remove(deckObjectRaw.cards, (stack) => {
-    let result = _.indexOf(idToDelete, stack.card_id)
+    let result = _.indexOf(idToDelete, stack.id)
     return result >= 0
   })
 
