@@ -39,8 +39,10 @@ module.exports = async (deckCode) => {
     delete stack.id
 
     stack.name = resultsMap[stack.card_id].card_name
+    stack.colour = resultsMap[stack.card_id].colour
   })
 
+  // do the same for cards
   _.forEach(deckObjectRaw.cards, (stack) => {
     stack.card_id = stack.id
     delete stack.id
