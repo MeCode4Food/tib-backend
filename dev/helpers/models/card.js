@@ -10,6 +10,7 @@ class Card {
     this.card_type = object.card_type
     this.card_text = object.card_text.english ? replaceHTMLwithMD(object.card_text.english) : null
     this.card_image = object.large_image.default ? object.large_image.default : null
+    this.card_icon = object.ingame_image.default ? object.ingame_image.default : null
 
     // assign colour based on is_X field
     if (object.is_blue === true) {

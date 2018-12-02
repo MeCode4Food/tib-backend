@@ -11,6 +11,7 @@ module.exports = async () => {
       table.string('card_type').notNullable()
       table.string('card_text')
       table.string('card_image')
+      table.string('card_thumbnail')
       table.string('colour').notNullable()
       table.string('rarity')
 
