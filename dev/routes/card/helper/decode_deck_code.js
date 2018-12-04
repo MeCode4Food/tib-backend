@@ -18,6 +18,10 @@ module.exports = async (deckCode) => {
     cardIdArray.push(stack.id)
   })
 
+  deckObjectRaw.cards = _.orderBy(deckObjectRaw.cards, 'desc')
+  // for cards, make sure that there are no repeat card_id's. take the one with the highest count if encountered.
+  deckObjectRaw.cards = _.uniqBy(deckObjectRaw.cards, 'id')
+
   let deckCardsQuery = knex
     .select()
     .from(`cards`)
