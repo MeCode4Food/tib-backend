@@ -67,9 +67,10 @@ let appendCardDependencies = async function (result) {
         card_id: result.parent_id
       })
 
-    let passiveCard = (await searchForParentCard)[0]
-    result.parent_name = passiveCard.card_name
-    result.parent_type = passiveCard.card_type
+    let parentCard = (await searchForParentCard)[0]
+    result.parent_name = parentCard.card_name
+    result.parent_type = parentCard.card_type
+    result.colour = parentCard.colour
   }
 
   return result
