@@ -6,6 +6,7 @@ module.exports = async (deckCode) => {
   let deckObjectRaw = deckDecoder.ParseDeck(deckCode)
 
   let cardIdArray = []
+  // let totalCardIds = deckObjectRaw.heroes.length + deckObjectRaw.cards.length
   let idToDelete = []
 
   // loop through heroes and cards to get card_id and put all of them into array cardIdArray
@@ -17,12 +18,17 @@ module.exports = async (deckCode) => {
     cardIdArray.push(stack.id)
   })
 
+  deckObjectRaw.cards = _.orderBy(deckObjectRaw.cards, 'desc')
+  // for cards, make sure that there are no repeat card_id's. take the one with the highest count if encountered.
+  deckObjectRaw.cards = _.uniqBy(deckObjectRaw.cards, 'id')
+
   let deckCardsQuery = knex
     .select()
     .from(`cards`)
     .whereIn(`card_id`, cardIdArray)
 
   let results = await deckCardsQuery
+  // if (results.length !== totalCardIds) { throw new Error('Please check the the deck code') }
 
   // create a map to avoid searching through array
   let resultsMap = {}
@@ -36,13 +42,16 @@ module.exports = async (deckCode) => {
     const id = stack.id
     const turn = stack.turn
 
-    stack = resultsMap[id]
+    Object.assign(stack, resultsMap[id])
     stack.turn = turn
 
+    console.log(stack.card_id, stack.turn)
     return stack
   })
 
   deckObjectRaw.heroes = _.sortBy(deckObjectRaw.heroes, (hero) => { return hero.turn })
+
+  console.log(deckObjectRaw.heroes)
 
   // do the same for cards
   deckObjectRaw.cards = _.map(deckObjectRaw.cards, (stack) => {
