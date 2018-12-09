@@ -80,5 +80,16 @@ module.exports = async (deckCode) => {
     return result >= 0
   })
 
+  deckObjectRaw.cards = _.sortBy(deckObjectRaw.cards, [
+    (card) => { return card.mana_cost },
+    (card) => { return card.colour },
+    (card) => { return card.card_name }
+  ])
+
+  deckObjectRaw.items = _.sortBy(deckObjectRaw.items, [
+    (item) => { return item.mana_cost },
+    (item) => { return item.card_name }
+  ])
+
   return deckObjectRaw
 }
