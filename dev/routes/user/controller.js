@@ -1,30 +1,15 @@
-const knex = require('../../services/knex')
 const respond = require(`${global.SERVER_ROOT}/services/response`)
-const { EmptyMySQLResultsetError } = require(`${global.SERVER_ROOT}/services/response/error`)
+const recordUserActivity = require('./helpers/record_user_activity')
+const validateNewActivity = require('./helpers/validate_new_activity')
 
-exports.getCardByName = async (req, res) => {
+exports.recordNewActivity = async (req, res) => {
   try {
-    let searchQuery = req.query.query
+    await validateNewActivity(req.body)
+    let userID = req.body['user_id']
+    let eventDate = req.body['date']
+    let userActivity = req.body['activity']
 
-    let query = knex
-      .select()
-      .from('users')
-      .where(`name`, `like`, `%${searchQuery}%`)
-
-    let results = await query
-    if (results.length <= 0) throw new EmptyMySQLResultsetError()
-
-    return respond.success(res, results)
-  } catch (error) {
-    return respond.failure(res, error)
-  }
-}
-
-exports.updateCardDBUsingJSONFile = async (req, res) => {
-  try {
-    const cardJson = require(`${global.SERVER_ROOT}../../cards.json`)
-
-    return respond.success(res, cardJson)
+    return respond.success(res, await recordUserActivity(userID, eventDate, userActivity))
   } catch (error) {
     return respond.failure(res, error)
   }
