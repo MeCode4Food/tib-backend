@@ -6,7 +6,7 @@ module.exports = async () => {
   let tableExists = await knex.schema.hasTable('user_activity')
   if (!tableExists) {
     let query = knex.schema.createTable('user_activity', (table) => {
-      table.string('id').primary()
+      table.string('id', 36).primary() // UUID
       table.string('user_id').notNullable()
       table.string('date')
       table.string('activity')

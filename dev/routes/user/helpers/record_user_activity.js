@@ -9,12 +9,18 @@ const knex = require(`${global.SERVER_ROOT}/services/knex`)
  */
 module.exports = async (userID, eventDate, userActivity) => {
   try {
-    knex('user_activity').insert({
+    let object = {
       id: uuidv4(),
       user_id: userID,
       date: eventDate,
       activity: userActivity
-    })
+    }
+
+    let query = knex('user_activity').insert(object)
+
+    await query
+
+    return object
   } catch (error) {
     throw error
   }
