@@ -60,6 +60,18 @@ let appendCardDependencies = async function (result) {
     result.passive_text = passiveCard.card_text
   }
 
+  if (result && result.active_id) {
+    let searchForActiveCard = knex.select()
+      .from('cards')
+      .where({
+        card_id: result.active_id
+      })
+
+    let activeCard = (await searchForActiveCard)[0]
+    result.active_name = activeCard.card_name
+    result.active_text = activeCard.card_text
+  }
+
   if (result && result.parent_id) {
     let searchForParentCard = knex.select()
       .from('cards')
