@@ -1,7 +1,7 @@
 let DB_TABLES = {
   DB_CARDS: 'cards',
   DB_USER_ACTIVITY: 'user_activity',
-  DB_USER_ONLINE_AVERAGE: 'user_online_average',
+  DB_USER_ONLINE_AVERAGES: 'user_online_averages',
   DB_USER_ONLINE_DAILY: 'user_online_daily'
 }
 

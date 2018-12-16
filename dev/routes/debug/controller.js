@@ -1,9 +1,10 @@
 // const knex = require('../../services/knex')
 const respond = require(`${global.SERVER_ROOT}/services/response`)
 const knex = require(`${global.SERVER_ROOT}/services/knex`)
-const { DB_USER_ACTIVITY, DB_USER_ONLINE_AVERAGE } = require(`${global.SERVER_ROOT}/helpers/variables`).DB_TABLES
+const { DB_USER_ACTIVITY, DB_USER_ONLINE_AVERAGES } = require(`${global.SERVER_ROOT}/helpers/variables`).DB_TABLES
 const { ACTIVITY_ONLINE, ACTIVITY_OFFLINE, ACTIVITY_START_GAME, ACTIVITY_STOP_GAME } = require(`${global.SERVER_ROOT}/helpers/variables`).USER_ACTIVITIES
-const nightmare = require(`${global.SERVER_ROOT}/services/nightmare`)
+const { MIN_ACTIVITY_DURATION_HOURS } = require(`${global.SERVER_ROOT}/helpers/scheduled_scripts/etl/etl_variables`)
+const uuidv4 = require('uuid/v4')
 const _ = require('lodash')
 
 exports.runDebug = async (req, res) => {
@@ -12,14 +13,14 @@ exports.runDebug = async (req, res) => {
     let todayDate = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`
     let thisMorning = new Date(today.setHours(0, 0, 0, 0))
 
-    let tomorrow = new Date(today.setDate(today.getDate() + 1))
-    let tomorrowDate = `${tomorrow.getFullYear()}-${tomorrow.getMonth() + 1}-${tomorrow.getDate()}`
-    let tomorrowMorning = new Date(tomorrow.setHours(0, 0, 0, 0))
+    let yesterday = new Date(today.setDate(today.getDate() - 1))
+    let yesterdayDate = `${yesterday.getFullYear()}-${yesterday.getMonth() + 1}-${yesterday.getDate()}`
+    let yesterdayMorning = new Date(yesterday.setHours(0, 0, 0, 0))
 
     let getTodaysActivityQuery = knex(DB_USER_ACTIVITY)
       .select()
-      .where('timestamp', '>', todayDate)
-      .andWhere('timestamp', '<', tomorrowDate)
+      .where('timestamp', '>', yesterdayDate)
+      .andWhere('timestamp', '<', todayDate)
 
     let results = await getTodaysActivityQuery
 
@@ -56,17 +57,29 @@ exports.runDebug = async (req, res) => {
       }
     })
 
-    // calculate hours by user
+    // variables for calculating averages
     let totalUsers = _.keys(userActivityObj).length
-    let gamingUsers = 0
-    let totalGamingHours = 0
-    let totalOnlineHours = 0
+    let totalGamers = 0
 
+    let activeUsers = 0
+    let activeGamers = 0
+
+    let totalGamingHours = 0
+    let totalActiveGamingHours = 0
+
+    let totalOnlineHours = 0
+    let totalActiveOnlineHours = 0
+
+    let isActive = false
+    let isGamer = false
+
+    // calculate hours by user
     _.forEach(userActivityObj, (user) => {
       let onlineHoursPerUser = 0
       let gamingHoursPerUser = 0
       let hasStarted = false
       let startTime
+
       _.forEach(user.online_activity, (activityEvent, index) => {
         switch (activityEvent.activity) {
           case ACTIVITY_ONLINE:
@@ -74,7 +87,7 @@ exports.runDebug = async (req, res) => {
             hasStarted = true
             break
           case ACTIVITY_OFFLINE:
-            let sessionDuration = hasStarted ? (activityEvent.timestamp - startTime) : (activityEvent.timestamp - thisMorning)
+            let sessionDuration = hasStarted ? (activityEvent.timestamp - startTime) : (activityEvent.timestamp - yesterdayMorning)
             let sessionDurationHours = sessionDuration / (1000 * 60 * 60)
             onlineHoursPerUser += sessionDurationHours
             hasStarted = false
@@ -85,7 +98,7 @@ exports.runDebug = async (req, res) => {
 
         // missing ending offline activity or end of day
         if (index === user.online_activity.length - 1 && hasStarted) {
-          let remainingDuration = tomorrowMorning - startTime
+          let remainingDuration = thisMorning - startTime
           let remainingDurationHours = remainingDuration / (1000 * 60 * 60)
           onlineHoursPerUser += remainingDurationHours
           hasStarted = false
@@ -99,7 +112,7 @@ exports.runDebug = async (req, res) => {
             hasStarted = true
             break
           case ACTIVITY_STOP_GAME:
-            let sessionDuration = hasStarted ? (activityEvent.timestamp - startTime) : (activityEvent.timestamp - thisMorning)
+            let sessionDuration = hasStarted ? (activityEvent.timestamp - startTime) : (activityEvent.timestamp - yesterdayMorning)
             let sessionDurationHours = sessionDuration / (1000 * 60 * 60)
             gamingHoursPerUser += sessionDurationHours
             hasStarted = false
@@ -109,26 +122,46 @@ exports.runDebug = async (req, res) => {
         }
 
         // missing ending offline activity or end of day
-        if (index === user.online_activity.length - 1 && hasStarted) {
-          let remainingDuration = tomorrowMorning - startTime
+        if (index === user.game_activity.length - 1 && hasStarted) {
+          let remainingDuration = thisMorning - startTime
           let remainingDurationHours = remainingDuration / (1000 * 60 * 60)
           gamingHoursPerUser += remainingDurationHours
           hasStarted = false
         }
       })
 
-      if (user.game_activity.length > 0) gamingUsers++
+      totalGamers += user.game_activity.length > 0 ? 1 : 0
+
+      // to decide whether to add data into DB for less active users
+      isActive = onlineHoursPerUser > MIN_ACTIVITY_DURATION_HOURS
       totalOnlineHours += onlineHoursPerUser
+      totalActiveOnlineHours += isActive ? onlineHoursPerUser : 0
+      activeUsers += isActive ? 1 : 0
+
+      isGamer = gamingHoursPerUser > MIN_ACTIVITY_DURATION_HOURS
       totalGamingHours += gamingHoursPerUser
+      totalActiveGamingHours += isGamer ? gamingHoursPerUser : 0
+      activeGamers += isGamer ? 1 : 0
     })
 
     let todayStats = {
-      'online_hours': parseFloat(totalOnlineHours.toFixed(3)),
-      'gaming_hours': parseFloat(totalGamingHours.toFixed(3)),
-      'online_users': totalUsers,
-      'gaming_users': gamingUsers
+      id: uuidv4(),
+      date: yesterdayDate,
+      total_online_hours: totalOnlineHours,
+      total_gaming_hours: totalGamingHours,
+      active_online_hours: totalActiveOnlineHours,
+      active_gaming_hours: totalActiveGamingHours,
+      total_users: totalUsers,
+      total_gamers: totalGamers,
+      active_users: activeUsers,
+      active_gamers: activeGamers
     }
-    return respond.success(res, todayStats)
+
+    // update user_online_averages
+    let updateAveragesQuery = knex(DB_USER_ONLINE_AVERAGES)
+      .insert(todayStats)
+
+    await updateAveragesQuery
   } catch (error) {
     return respond.failure(res, error)
   }

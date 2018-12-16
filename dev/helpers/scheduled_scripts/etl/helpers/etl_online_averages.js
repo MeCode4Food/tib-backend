@@ -1,13 +1,21 @@
-const respond = require(`${global.SERVER_ROOT}/services/response`)
 const knex = require(`${global.SERVER_ROOT}/services/knex`)
-const { DB_USER_ACTIVITY, DB_USER_ONLINE_AVERAGE } = require(`${global.SERVER_ROOT}/helpers/variables`).DB_TABLES
+const { DB_USER_ACTIVITY, DB_USER_ONLINE_AVERAGES } = require(`${global.SERVER_ROOT}/helpers/variables`).DB_TABLES
 const { ACTIVITY_ONLINE, ACTIVITY_OFFLINE, ACTIVITY_START_GAME, ACTIVITY_STOP_GAME } = require(`${global.SERVER_ROOT}/helpers/variables`).USER_ACTIVITIES
+const { MIN_ACTIVITY_DURATION_HOURS } = require('../etl_variables')
+const uuidv4 = require('uuid/v4')
 const SIGNALE = require('signale')
 const chalk = require('chalk')
+const _ = require('lodash')
+const CronJob = require('cron').CronJob
 
 module.exports = async () => {
+  etlJob.start()
+}
+
+const etlJob = new CronJob('00 05 16 * * *', async () => {
+  SIGNALE.info(`ETL Job ${chalk.blue('etl_online_averages')} started`)
+
   try {
-    
     let today = new Date()
     let todayDate = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`
     let thisMorning = new Date(today.setHours(0, 0, 0, 0))
@@ -15,8 +23,6 @@ module.exports = async () => {
     let yesterday = new Date(today.setDate(today.getDate() - 1))
     let yesterdayDate = `${yesterday.getFullYear()}-${yesterday.getMonth() + 1}-${yesterday.getDate()}`
     let yesterdayMorning = new Date(yesterday.setHours(0, 0, 0, 0))
-    
-    SIGNALE.info(`ETL job ${chalk.blue('online_averages')} running for day ${chalk.cyan(yesterdayDate)}`)
 
     let getTodaysActivityQuery = knex(DB_USER_ACTIVITY)
       .select()
@@ -58,17 +64,29 @@ module.exports = async () => {
       }
     })
 
-    // calculate hours by user
+    // variables for calculating averages
     let totalUsers = _.keys(userActivityObj).length
-    let gamingUsers = 0
-    let totalGamingHours = 0
-    let totalOnlineHours = 0
+    let totalGamers = 0
 
+    let activeUsers = 0
+    let activeGamers = 0
+
+    let totalGamingHours = 0
+    let totalActiveGamingHours = 0
+
+    let totalOnlineHours = 0
+    let totalActiveOnlineHours = 0
+
+    let isActive = false
+    let isGamer = false
+
+    // calculate hours by user
     _.forEach(userActivityObj, (user) => {
       let onlineHoursPerUser = 0
       let gamingHoursPerUser = 0
       let hasStarted = false
       let startTime
+
       _.forEach(user.online_activity, (activityEvent, index) => {
         switch (activityEvent.activity) {
           case ACTIVITY_ONLINE:
@@ -111,7 +129,7 @@ module.exports = async () => {
         }
 
         // missing ending offline activity or end of day
-        if (index === user.online_activity.length - 1 && hasStarted) {
+        if (index === user.game_activity.length - 1 && hasStarted) {
           let remainingDuration = thisMorning - startTime
           let remainingDurationHours = remainingDuration / (1000 * 60 * 60)
           gamingHoursPerUser += remainingDurationHours
@@ -119,19 +137,41 @@ module.exports = async () => {
         }
       })
 
-      if (user.game_activity.length > 0) gamingUsers++
+      totalGamers += user.game_activity.length > 0 ? 1 : 0
+
+      // to decide whether to add data into DB for less active users
+      isActive = onlineHoursPerUser > MIN_ACTIVITY_DURATION_HOURS
       totalOnlineHours += onlineHoursPerUser
+      totalActiveOnlineHours += isActive ? onlineHoursPerUser : 0
+      activeUsers += isActive ? 1 : 0
+
+      isGamer = gamingHoursPerUser > MIN_ACTIVITY_DURATION_HOURS
       totalGamingHours += gamingHoursPerUser
+      totalActiveGamingHours += isGamer ? gamingHoursPerUser : 0
+      activeGamers += isGamer ? 1 : 0
     })
 
     let todayStats = {
-      'online_hours': parseFloat(totalOnlineHours.toFixed(3)),
-      'gaming_hours': parseFloat(totalGamingHours.toFixed(3)),
-      'online_users': totalUsers,
-      'gaming_users': gamingUsers
+      id: uuidv4(),
+      date: yesterdayDate,
+      total_online_hours: totalOnlineHours,
+      total_gaming_hours: totalGamingHours,
+      active_online_hours: totalActiveOnlineHours,
+      active_gaming_hours: totalActiveGamingHours,
+      total_users: totalUsers,
+      total_gamers: totalGamers,
+      active_users: activeUsers,
+      active_gamers: activeGamers
     }
-    return respond.success(res, todayStats)
+
+    // update user_online_averages
+    let updateAveragesQuery = knex(DB_USER_ONLINE_AVERAGES)
+      .insert(todayStats)
+
+    await updateAveragesQuery
   } catch (error) {
-    return respond.failure(res, error)
+    throw error
+  } finally {
+    SIGNALE.start(`ETL Job ${chalk.blue('etl_online_averages')} ended successfully`)
   }
-}
+})

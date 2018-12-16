@@ -1,5 +1,6 @@
-const { initMySQLTables } = require(`${global.SERVER_ROOT}/services/mysql/startup`)
-const pingDB = require('./helpers/mysql_ping')
+const { initMySQLTables } = require('./helpers/mysql_init_tables')
+const startMysqlPing = require('./helpers/mysql_ping')
+const startETLScripts = require('../scheduled_scripts/etl')
 
 module.exports.setupDB = async () => {
   await initMySQLTables()
@@ -10,15 +11,6 @@ module.exports.getWebAppAPI = () => {
 }
 
 module.exports.setupTimedScripts = async () => {
-  const interval = 1000 * 60 * 60 // hours interval
-
-  setInterval(async () => {
-    try {
-      await pingDB()
-    } catch (error) {
-      console.log('Timed Script error', error)
-    } finally {
-      // console.log('DB Pinged')
-    }
-  }, interval)
+  startMysqlPing()
+  startETLScripts()
 }
