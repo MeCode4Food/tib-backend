@@ -1,13 +1,20 @@
-// const knex = require('../../services/knex')
-const respond = require(`${global.SERVER_ROOT}/services/response`)
 const knex = require(`${global.SERVER_ROOT}/services/knex`)
 const { DB_USER_ACTIVITY, DB_USER_ONLINE_AVERAGES } = require(`${global.SERVER_ROOT}/helpers/variables`).DB_TABLES
 const { ACTIVITY_ONLINE, ACTIVITY_OFFLINE, ACTIVITY_START_GAME, ACTIVITY_STOP_GAME } = require(`${global.SERVER_ROOT}/helpers/variables`).USER_ACTIVITIES
-const { MIN_ACTIVITY_DURATION_HOURS } = require(`${global.SERVER_ROOT}/helpers/scheduled_scripts/etl/etl_variables`)
+const { MIN_ACTIVITY_DURATION_HOURS, CRON_TIME_ONLINE_AVERAGES } = require('../etl_variables')
 const uuidv4 = require('uuid/v4')
+const SIGNALE = require('signale')
+const chalk = require('chalk')
 const _ = require('lodash')
+const CronJob = require('cron').CronJob
 
-exports.runDebug = async (req, res) => {
+module.exports = async () => {
+  etlJob.start()
+}
+
+const etlJob = new CronJob(CRON_TIME_ONLINE_AVERAGES, async () => {
+  SIGNALE.info(`ETL Job ${chalk.blue('etl_online_averages')} started`)
+
   try {
     let today = new Date()
     let todayDate = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`
@@ -163,6 +170,8 @@ exports.runDebug = async (req, res) => {
 
     await updateAveragesQuery
   } catch (error) {
-    return respond.failure(res, error)
+    throw error
+  } finally {
+    SIGNALE.start(`ETL Job ${chalk.blue('etl_online_averages')} ended successfully`)
   }
-}
+})
