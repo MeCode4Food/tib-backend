@@ -5,8 +5,10 @@ const { API_SECRET } = process.env
 module.exports = (queryObject) => {
   return new Promise((resolve, reject) => {
     Joi.validate(queryObject, Joi.object().keys({
-      'set_num': Joi.string().required().valid(['00', '01']),
-      'passphrase': Joi.string().required().valid([API_SECRET]).error(new PassphraseError())
+      'user_id': Joi.string().required(),
+      'date': Joi.string().isoDate(),
+      'activity': Joi.string().valid(['user_online', 'user_offline', 'user_start_game', 'user_stop_game']),
+      'secret': Joi.string().required().valid([API_SECRET]).error(new PassphraseError())
     }), (error, value) => {
       if (error) reject(error)
       resolve(value)
