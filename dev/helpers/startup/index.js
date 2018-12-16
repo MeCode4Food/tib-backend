@@ -1,5 +1,5 @@
 const { initMySQLTables } = require('./helpers/mysql_init_tables')
-const startMysqlPing = require('./helpers/mysql_ping')
+const startMySQLPing = require('../scheduled_scripts/ping_db')
 const startETLScripts = require('../scheduled_scripts/etl')
 
 module.exports.setupDB = async () => {
@@ -11,6 +11,6 @@ module.exports.getWebAppAPI = () => {
 }
 
 module.exports.setupTimedScripts = async () => {
-  startMysqlPing()
+  startMySQLPing()
   startETLScripts()
 }

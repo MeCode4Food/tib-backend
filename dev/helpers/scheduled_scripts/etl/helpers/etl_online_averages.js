@@ -1,7 +1,7 @@
 const knex = require(`${global.SERVER_ROOT}/services/knex`)
 const { DB_USER_ACTIVITY, DB_USER_ONLINE_AVERAGES } = require(`${global.SERVER_ROOT}/helpers/variables`).DB_TABLES
 const { ACTIVITY_ONLINE, ACTIVITY_OFFLINE, ACTIVITY_START_GAME, ACTIVITY_STOP_GAME } = require(`${global.SERVER_ROOT}/helpers/variables`).USER_ACTIVITIES
-const { MIN_ACTIVITY_DURATION_HOURS } = require('../etl_variables')
+const { MIN_ACTIVITY_DURATION_HOURS, CRON_TIME_ONLINE_AVERAGES } = require('../etl_variables')
 const uuidv4 = require('uuid/v4')
 const SIGNALE = require('signale')
 const chalk = require('chalk')
@@ -12,7 +12,7 @@ module.exports = async () => {
   etlJob.start()
 }
 
-const etlJob = new CronJob('00 05 16 * * *', async () => {
+const etlJob = new CronJob(CRON_TIME_ONLINE_AVERAGES, async () => {
   SIGNALE.info(`ETL Job ${chalk.blue('etl_online_averages')} started`)
 
   try {
