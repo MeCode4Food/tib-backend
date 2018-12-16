@@ -1,25 +1,27 @@
-// const knex = require('../../services/knex')
 const respond = require(`${global.SERVER_ROOT}/services/response`)
 const knex = require(`${global.SERVER_ROOT}/services/knex`)
 const { DB_USER_ACTIVITY, DB_USER_ONLINE_AVERAGE } = require(`${global.SERVER_ROOT}/helpers/variables`).DB_TABLES
 const { ACTIVITY_ONLINE, ACTIVITY_OFFLINE, ACTIVITY_START_GAME, ACTIVITY_STOP_GAME } = require(`${global.SERVER_ROOT}/helpers/variables`).USER_ACTIVITIES
-const nightmare = require(`${global.SERVER_ROOT}/services/nightmare`)
-const _ = require('lodash')
+const SIGNALE = require('signale')
+const chalk = require('chalk')
 
-exports.runDebug = async (req, res) => {
+module.exports = async () => {
   try {
+    
     let today = new Date()
     let todayDate = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`
     let thisMorning = new Date(today.setHours(0, 0, 0, 0))
 
-    let tomorrow = new Date(today.setDate(today.getDate() + 1))
-    let tomorrowDate = `${tomorrow.getFullYear()}-${tomorrow.getMonth() + 1}-${tomorrow.getDate()}`
-    let tomorrowMorning = new Date(tomorrow.setHours(0, 0, 0, 0))
+    let yesterday = new Date(today.setDate(today.getDate() - 1))
+    let yesterdayDate = `${yesterday.getFullYear()}-${yesterday.getMonth() + 1}-${yesterday.getDate()}`
+    let yesterdayMorning = new Date(yesterday.setHours(0, 0, 0, 0))
+    
+    SIGNALE.info(`ETL job ${chalk.blue('online_averages')} running for day ${chalk.cyan(yesterdayDate)}`)
 
     let getTodaysActivityQuery = knex(DB_USER_ACTIVITY)
       .select()
-      .where('timestamp', '>', todayDate)
-      .andWhere('timestamp', '<', tomorrowDate)
+      .where('timestamp', '>', yesterdayDate)
+      .andWhere('timestamp', '<', todayDate)
 
     let results = await getTodaysActivityQuery
 
@@ -74,7 +76,7 @@ exports.runDebug = async (req, res) => {
             hasStarted = true
             break
           case ACTIVITY_OFFLINE:
-            let sessionDuration = hasStarted ? (activityEvent.timestamp - startTime) : (activityEvent.timestamp - thisMorning)
+            let sessionDuration = hasStarted ? (activityEvent.timestamp - startTime) : (activityEvent.timestamp - yesterdayMorning)
             let sessionDurationHours = sessionDuration / (1000 * 60 * 60)
             onlineHoursPerUser += sessionDurationHours
             hasStarted = false
@@ -85,7 +87,7 @@ exports.runDebug = async (req, res) => {
 
         // missing ending offline activity or end of day
         if (index === user.online_activity.length - 1 && hasStarted) {
-          let remainingDuration = tomorrowMorning - startTime
+          let remainingDuration = thisMorning - startTime
           let remainingDurationHours = remainingDuration / (1000 * 60 * 60)
           onlineHoursPerUser += remainingDurationHours
           hasStarted = false
@@ -99,7 +101,7 @@ exports.runDebug = async (req, res) => {
             hasStarted = true
             break
           case ACTIVITY_STOP_GAME:
-            let sessionDuration = hasStarted ? (activityEvent.timestamp - startTime) : (activityEvent.timestamp - thisMorning)
+            let sessionDuration = hasStarted ? (activityEvent.timestamp - startTime) : (activityEvent.timestamp - yesterdayMorning)
             let sessionDurationHours = sessionDuration / (1000 * 60 * 60)
             gamingHoursPerUser += sessionDurationHours
             hasStarted = false
@@ -110,7 +112,7 @@ exports.runDebug = async (req, res) => {
 
         // missing ending offline activity or end of day
         if (index === user.online_activity.length - 1 && hasStarted) {
-          let remainingDuration = tomorrowMorning - startTime
+          let remainingDuration = thisMorning - startTime
           let remainingDurationHours = remainingDuration / (1000 * 60 * 60)
           gamingHoursPerUser += remainingDurationHours
           hasStarted = false

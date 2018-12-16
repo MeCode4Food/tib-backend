@@ -8,7 +8,7 @@ module.exports = async () => {
     let query = knex.schema.createTable('user_activity', (table) => {
       table.string('id', 36).primary() // UUID
       table.string('user_id').notNullable()
-      table.string('date')
+      table.timestamp('timestamp')
       table.string('activity')
     })
 

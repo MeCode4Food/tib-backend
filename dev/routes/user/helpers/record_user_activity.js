@@ -12,7 +12,7 @@ module.exports = async (userID, eventDate, userActivity) => {
     let object = {
       id: uuidv4(),
       user_id: userID,
-      date: eventDate,
+      timestamp: eventDate,
       activity: userActivity
     }
 
