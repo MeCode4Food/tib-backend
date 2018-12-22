@@ -28,6 +28,7 @@ const etlJob = new CronJob(CRON_TIME_ONLINE_AVERAGES, async () => {
       .select()
       .where('timestamp', '>', yesterdayDate)
       .andWhere('timestamp', '<', todayDate)
+      .orderBy('timestamp', 'asc')
 
     let results = await getTodaysActivityQuery
 
@@ -103,7 +104,7 @@ const etlJob = new CronJob(CRON_TIME_ONLINE_AVERAGES, async () => {
             break
         }
 
-        // missing ending offline activity or end of day
+        // fixing user activty for those missing ending offline activity at the end of day, or things bugged out
         if (index === user.online_activity.length - 1 && hasStarted) {
           let remainingDuration = thisMorning - startTime
           let remainingDurationHours = remainingDuration / (1000 * 60 * 60)
@@ -139,7 +140,7 @@ const etlJob = new CronJob(CRON_TIME_ONLINE_AVERAGES, async () => {
 
       totalGamers += user.game_activity.length > 0 ? 1 : 0
 
-      // to decide whether to add data into DB for less active users
+      // to separate data for less active users
       isActive = onlineHoursPerUser > MIN_ACTIVITY_DURATION_HOURS
       totalOnlineHours += onlineHoursPerUser
       totalActiveOnlineHours += isActive ? onlineHoursPerUser : 0
