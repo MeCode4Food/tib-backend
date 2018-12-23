@@ -1,7 +1,7 @@
 // const knex = require('../../services/knex')
 const respond = require(`${global.SERVER_ROOT}/services/response`)
 const knex = require(`${global.SERVER_ROOT}/services/knex`)
-const { DB_USER_ACTIVITY, DB_USER_ONLINE_AVERAGES } = require(`${global.SERVER_ROOT}/helpers/variables`).DB_TABLES
+const { DB_USER_ACTIVITY } = require(`${global.SERVER_ROOT}/helpers/variables`).DB_TABLES
 const { ACTIVITY_ONLINE, ACTIVITY_OFFLINE, ACTIVITY_START_GAME, ACTIVITY_STOP_GAME } = require(`${global.SERVER_ROOT}/helpers/variables`).USER_ACTIVITIES
 const { MIN_ACTIVITY_DURATION_HOURS } = require(`${global.SERVER_ROOT}/helpers/scheduled_scripts/etl/etl_variables`)
 const uuidv4 = require('uuid/v4')
@@ -21,6 +21,7 @@ exports.runDebug = async (req, res) => {
       .select()
       .where('timestamp', '>', yesterdayDate)
       .andWhere('timestamp', '<', todayDate)
+      .orderBy('timestamp', 'asc')
 
     let results = await getTodaysActivityQuery
 
@@ -96,7 +97,7 @@ exports.runDebug = async (req, res) => {
             break
         }
 
-        // missing ending offline activity or end of day
+        // fixing user activty for those missing ending offline activity at the end of day, or things bugged out
         if (index === user.online_activity.length - 1 && hasStarted) {
           let remainingDuration = thisMorning - startTime
           let remainingDurationHours = remainingDuration / (1000 * 60 * 60)
@@ -132,7 +133,7 @@ exports.runDebug = async (req, res) => {
 
       totalGamers += user.game_activity.length > 0 ? 1 : 0
 
-      // to decide whether to add data into DB for less active users
+      // to separate data for less active users
       isActive = onlineHoursPerUser > MIN_ACTIVITY_DURATION_HOURS
       totalOnlineHours += onlineHoursPerUser
       totalActiveOnlineHours += isActive ? onlineHoursPerUser : 0
@@ -148,8 +149,8 @@ exports.runDebug = async (req, res) => {
       id: uuidv4(),
       date: yesterdayDate,
       total_online_hours: totalOnlineHours,
-      total_gaming_hours: totalGamingHours,
       active_online_hours: totalActiveOnlineHours,
+      total_gaming_hours: totalGamingHours,
       active_gaming_hours: totalActiveGamingHours,
       total_users: totalUsers,
       total_gamers: totalGamers,
@@ -157,11 +158,7 @@ exports.runDebug = async (req, res) => {
       active_gamers: activeGamers
     }
 
-    // update user_online_averages
-    let updateAveragesQuery = knex(DB_USER_ONLINE_AVERAGES)
-      .insert(todayStats)
-
-    await updateAveragesQuery
+    return respond.success(res, todayStats)
   } catch (error) {
     return respond.failure(res, error)
   }
