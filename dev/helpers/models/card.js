@@ -1,4 +1,4 @@
-const { replaceHTMLwithMD } = require('./helper/card_text')
+const { replaceHTMLwithMD } = require('./helper/card_text_formatter')
 
 class Card {
   constructor (object) {
