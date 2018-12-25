@@ -72,18 +72,18 @@ let appendCardDependencies = async function (result) {
     result.active_text = activeCard.card_text
   }
 
-  if (result && result.parent_id) {
-    let searchForParentCard = knex.select()
-      .from('cards')
-      .where({
-        card_id: result.parent_id
-      })
+  // if (result && result.parent_id) {
+  //   let searchForParentCard = knex.select()
+  //     .from('cards')
+  //     .where({
+  //       card_id: result.parent_id
+  //     })
 
-    let parentCard = (await searchForParentCard)[0]
-    result.parent_name = parentCard.card_name
-    result.parent_type = parentCard.card_type
-    result.colour = parentCard.colour
-  }
+  //   let parentCard = (await searchForParentCard)[0]
+  //   result.parent_name = parentCard.card_name
+  //   result.parent_type = parentCard.card_type
+  //   result.colour = parentCard.colour
+  // }
 
   return result
 }

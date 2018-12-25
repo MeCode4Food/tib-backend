@@ -1,16 +1,30 @@
-const deckDecoder = require('./decoder')
+const deckDecoder = require('./deckcode_decoder')
 const knex = require(`${global.SERVER_ROOT}/services/knex`)
 const _ = require('lodash')
 
 module.exports = async (deckCode) => {
   let deckObjectRaw = deckDecoder.ParseDeck(deckCode)
 
+  let heroCount = {}
   let cardIdArray = []
   let idToDelete = []
 
   // loop through heroes and cards to get card_id and put all of them into array cardIdArray
   _.forEach(deckObjectRaw.heroes, (stack) => {
     cardIdArray.push(stack.id)
+    heroCount[stack.id] = heroCount[stack.id] ? heroCount[stack.id] + 1 : 1
+  })
+
+  let heroCardsQuery = knex
+    .select()
+    .from(`cards`)
+    .whereIn(`card_id`, cardIdArray)
+
+  let heroCards = await heroCardsQuery
+
+  _.forEach(heroCards, (heroCard) => {
+    cardIdArray.push(heroCard.signature_id)
+    deckObjectRaw.cards.push({ id: heroCard.signature_id, count: 3 * heroCount[heroCard.card_id] })
   })
 
   _.forEach(deckObjectRaw.cards, (stack) => {
