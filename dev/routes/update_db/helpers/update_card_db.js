@@ -35,7 +35,8 @@ module.exports = (cardSet) => {
             armour,
             hit_points,
             mana_cost,
-            gold_cost 
+            gold_cost,
+            charges
           )
           VALUES (
             :card_id,
@@ -55,7 +56,8 @@ module.exports = (cardSet) => {
             :armour,
             :hit_points,
             :mana_cost,
-            :gold_cost
+            :gold_cost,
+            :charges
           )
           ON DUPLICATE KEY UPDATE
             card_id = :card_id,
@@ -75,7 +77,8 @@ module.exports = (cardSet) => {
             armour = :armour,
             hit_points = :hit_points,
             mana_cost = :mana_cost,
-            gold_cost = :gold_cost
+            gold_cost = :gold_cost,
+            charges = :charges
           `,
         {
           'card_id': newCard.card_id,
@@ -95,7 +98,8 @@ module.exports = (cardSet) => {
           'armour': newCard.armour,
           'hit_points': newCard.hit_points,
           'mana_cost': newCard.mana_cost,
-          'gold_cost': newCard.gold_cost
+          'gold_cost': newCard.gold_cost,
+          'charges': newCard.charges
         })
 
         await insertNewCardQuery
