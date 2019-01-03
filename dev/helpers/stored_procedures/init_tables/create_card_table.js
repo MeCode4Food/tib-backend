@@ -31,6 +31,7 @@ module.exports = async () => {
       table.integer('hit_points')
       table.integer('mana_cost')
       table.integer('gold_cost')
+      table.integer('charges')
     })
 
     await query
