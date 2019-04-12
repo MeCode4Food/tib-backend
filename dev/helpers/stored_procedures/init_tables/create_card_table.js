@@ -11,6 +11,7 @@ module.exports = async () => {
       table.string('card_type').notNullable()
       table.string('card_text')
       table.string('card_image')
+      table.string('card_icon')
       table.string('card_thumbnail')
       table.string('colour').notNullable()
       table.string('rarity')
@@ -18,6 +19,8 @@ module.exports = async () => {
       // card relations
       table.integer('signature_id')
       table.integer('parent_id')
+      table.string('parent_name')
+      table.string('parent_type')
       table.integer('passive_id')
       table.integer('active_id')
       table.integer('reference_id')
@@ -28,6 +31,7 @@ module.exports = async () => {
       table.integer('hit_points')
       table.integer('mana_cost')
       table.integer('gold_cost')
+      table.integer('charges')
     })
 
     await query

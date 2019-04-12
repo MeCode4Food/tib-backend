@@ -9,7 +9,7 @@ module.exports = (cardSet) => {
     // VALUES ( , , , '', '', '', '', '', , , , '',  );
     try {
       let cardList = cardSet
-      let childMap = {} // map child cards (id) to parent cards (id)
+      let parentMap = {} // map child cards (id) to parent cards (id)
       let cardCount = 0
       SIGNALE.info('Putting cards from card list into DB')
 
@@ -35,7 +35,8 @@ module.exports = (cardSet) => {
             armour,
             hit_points,
             mana_cost,
-            gold_cost 
+            gold_cost,
+            charges
           )
           VALUES (
             :card_id,
@@ -55,7 +56,8 @@ module.exports = (cardSet) => {
             :armour,
             :hit_points,
             :mana_cost,
-            :gold_cost
+            :gold_cost,
+            :charges
           )
           ON DUPLICATE KEY UPDATE
             card_id = :card_id,
@@ -75,7 +77,8 @@ module.exports = (cardSet) => {
             armour = :armour,
             hit_points = :hit_points,
             mana_cost = :mana_cost,
-            gold_cost = :gold_cost
+            gold_cost = :gold_cost,
+            charges = :charges
           `,
         {
           'card_id': newCard.card_id,
@@ -95,16 +98,17 @@ module.exports = (cardSet) => {
           'armour': newCard.armour,
           'hit_points': newCard.hit_points,
           'mana_cost': newCard.mana_cost,
-          'gold_cost': newCard.gold_cost
+          'gold_cost': newCard.gold_cost,
+          'charges': newCard.charges
         })
 
         await insertNewCardQuery
 
         // assign child card id to parent card id
-        if (newCard.signature_id) childMap[newCard.signature_id] = newCard.card_id
-        if (newCard.passive_id) childMap[newCard.passive_id] = newCard.card_id
-        if (newCard.active_id) childMap[newCard.active_id] = newCard.card_id
-        if (newCard.reference_id && newCard.reference_id >= 10000) childMap[newCard.reference_id] = newCard.card_id
+        if (newCard.signature_id) parentMap[newCard.signature_id] = newCard.card_id
+        if (newCard.passive_id) parentMap[newCard.passive_id] = newCard.card_id
+        if (newCard.active_id) parentMap[newCard.active_id] = newCard.card_id
+        if (newCard.reference_id && newCard.reference_id >= 10000) parentMap[newCard.reference_id] = newCard.card_id
 
         cardCount++
       }
@@ -113,15 +117,28 @@ module.exports = (cardSet) => {
       SIGNALE.info('Resolving card dependencies')
       cardCount = 0
       // assign parent id to child cards using knex update
-      for (let index = 0; index < Object.keys(childMap).length; index++) {
-        let childId = Object.keys(childMap)[index]
+      for (let index = 0; index < Object.keys(parentMap).length; index++) {
+        let childId = Object.keys(parentMap)[index]
+        let parentId = parentMap[childId]
+
+        let getParentQuery = knex('cards')
+          .select()
+          .where({
+            'card_id': parentId
+          })
+
+        let parentCard = await getParentQuery
+
         let updateChildCardParentQuery = knex('cards').update({
-          'parent_id': childMap[childId]
+          'parent_id': parentMap[childId],
+          'parent_name': parentCard[0]['card_name'],
+          'parent_type': parentCard[0]['card_type'],
+          'colour': parentCard['colour']
         }).where({
           'card_id': childId
         })
 
-        SIGNALE.info(`Updating parent id ${chalk.cyan(childMap[childId])} for child id ${chalk.cyan(childId)}`)
+        SIGNALE.info(`Updating parent id ${chalk.cyan(parentMap[childId])} for child id ${chalk.cyan(childId)}`)
         await updateChildCardParentQuery
         cardCount++
       }

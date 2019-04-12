@@ -6,11 +6,10 @@ const knex = require(`${global.SERVER_ROOT}/services/knex`)
  * @isoDate eventDate
  * @string userActivity
  */
-module.exports = async (date, hour, online, inGame, total) => {
+module.exports = async (timestamp, online, inGame, total) => {
   try {
     let object = {
-      date: date,
-      hour: hour,
+      timestamp: timestamp,
       online: online,
       in_game: inGame,
       total: total
