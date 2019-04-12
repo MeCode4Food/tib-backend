@@ -3,7 +3,7 @@ const SIGNALE = require('signale')
 
 module.exports = async () => {
   try {
-    etlOnlineAverages()
+    if (process.env.ETL_MODE === "1") etlOnlineAverages()
   } catch (error) {
     SIGNALE.error(error)
   }
