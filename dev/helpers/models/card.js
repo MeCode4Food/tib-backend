@@ -1,4 +1,4 @@
-const { replaceHTMLwithMD } = require('./helper/card_text')
+const { replaceHTMLwithMD } = require('./helper/card_text_formatter')
 
 class Card {
   constructor (object) {
@@ -59,6 +59,7 @@ class Card {
     this.hit_points = object.hit_points ? object.hit_points : null
     this.mana_cost = object.mana_cost ? object.mana_cost : null
     this.gold_cost = object.gold_cost ? object.gold_cost : null
+    this.charges = object.charges ? object.charges : null
   }
 }
 

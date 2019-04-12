@@ -20,15 +20,13 @@ exports.recordNewActivity = async (req, res) => {
 exports.recordHourlyActivity = async (req, res) => {
   try {
     await validateHourlyActivity(req.body)
-    let date = req.body['date']
-    let hour = req.body['hour']
+    let timestamp = req.body['timestamp']
     let online = req.body['online']
     let inGame = req.body['in_game']
     let total = req.body['total']
 
     return respond.success(res, await recordHourlyActivity(
-      date,
-      hour,
+      timestamp,
       online,
       inGame,
       total

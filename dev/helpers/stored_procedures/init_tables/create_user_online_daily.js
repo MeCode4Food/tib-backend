@@ -6,9 +6,7 @@ module.exports = async () => {
   let tableExists = await knex.schema.hasTable('user_online_daily')
   if (!tableExists) {
     let query = knex.schema.createTable('user_online_daily', (table) => {
-      table.unique(['date', 'hour'])
-      table.date('date')
-      table.integer('hour')
+      table.timestamp('timestamp').primary()
       table.integer('online')
       table.integer('in_game')
       table.integer('total')

@@ -1,6 +1,6 @@
 const validateCardSearch = require('./helper/validate_card_search')
 const validateDeckDecode = require('./helper/validate_deck_decode')
-const decodeDeckCode = require('./helper/decode_deck_code')
+const decodeDeckCode = require('./helper/get_decklist_from_deckcode')
 const { searchForCard } = require('./helper/search_for_card')
 const respond = require(`${global.SERVER_ROOT}/services/response`)
 
