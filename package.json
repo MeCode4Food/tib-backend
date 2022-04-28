@@ -20,7 +20,7 @@
   },
   "homepage": "https://github.com/MeCode4Food/node-rest-starter#readme",
   "dependencies": {
-    "async": "^2.6.1",
+    "async": "^2.6.4",
     "axios": "^0.18.0",
     "body-parser": "^1.18.3",
     "chalk": "^2.4.1",
